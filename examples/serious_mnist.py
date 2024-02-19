@@ -2,7 +2,7 @@
 #inspired by https://github.com/Matuzas77/MNIST-0.17/blob/master/MNIST_final_solution.ipynb
 import sys
 import numpy as np
-from tinygrad.nn.state import get_parameters
+from tinygrad.nn.state import get_parameters, get_state_dict, load_state_dict, safe_load, safe_save
 from tinygrad.tensor import Tensor
 from tinygrad.nn import BatchNorm2d, optim
 from tinygrad.helpers import getenv
@@ -68,24 +68,10 @@ class BigConvNet:
     else:
       return get_parameters(self)
 
-  def save(self, filename):
-    with open(filename+'.npy', 'wb') as f:
-      for par in get_parameters(self):
-        #if par.requires_grad:
-        np.save(f, par.numpy())
+  def save(self, filename): safe_save(get_state_dict(self), f"{filename}.safetensors")
+  def load(self, filepath): load_state_dict(self, safe_load(filepath))
 
-  def load(self, filename):
-    with open(filename+'.npy', 'rb') as f:
-      for par in get_parameters(self):
-        #if par.requires_grad:
-        try:
-          par.numpy()[:] = np.load(f)
-          if GPU:
-            par.gpu()
-        except:
-          print('Could not load parameter')
-
-  def forward(self, x):
+  def forward(self, x) -> Tensor:
     x = self.conv[0](x)
     x = self.conv[1](x)
     x = x.avg_pool2d(kernel_size=(2,2))
