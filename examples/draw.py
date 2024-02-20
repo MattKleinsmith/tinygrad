@@ -36,15 +36,16 @@ cv2.imshow(output_canvas_title, output_canvas)
 cv2.moveWindow(input_canvas_title, 0, 0)
 cv2.moveWindow(output_canvas_title, width, 0)
 
-last_save_time = time.time()
+last_time = time.time()
 last_prediction = None
+delay = 0.1
 
 try:
   while True:
     cv2.imshow(input_canvas_title, input_canvas)
     cv2.imshow(output_canvas_title, output_canvas)
 
-    if (time.time() - last_save_time < 0.1):
+    if (time.time() - last_time < delay):
       image = cv2.resize(input_canvas, (28, 28), interpolation=cv2.INTER_AREA)[:, :, 0]
       output = model.forward(Tensor(image))
       prediction = np.argmax(output.numpy(), axis=-1)[0]
@@ -52,7 +53,7 @@ try:
         output_canvas = create_blank_canvas()
         cv2.putText(output_canvas, str(prediction), (100, 300), cv2.FONT_HERSHEY_SIMPLEX, 10, pen_color, pen_thickness)
       last_prediction = prediction
-      last_save_time = time.time()
+      last_time = time.time()
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'): break
